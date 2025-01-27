@@ -8,75 +8,78 @@ Console.WriteLine("Hej och välkommen, du behöver överleva genom att äta" +
 Console.ReadLine();
 Console.Clear();
 
-float hp = 100;
-float hunger = 100;
-float heat = 100;
+
+int hungerDamage = 0;
+int heatDamage = 0;
+
+Player player = new();
 
 int daysCount = 1;
 
-while (hp > 0)
+int storedFood = 0;
+int storedTree = 0;
+
+while (player.hp > 0)
 {
     //Mängd mat och ved
     int foodCount = random.Next(0, 2);
     int treeCount = random.Next(0, 2);
     int damage = random.Next(40, 70);
     //Mängd förlorad värme och hunger
-    int hungerDamage = random.Next(10, 40);
-    int heatDamage = random.Next(10, 40);
+    hungerDamage = random.Next(15, 40);
+    heatDamage = random.Next(15, 40);
 
     string availbleItems = "";
     string answer = "";
 
+    foodCount += storedFood;
+    treeCount += storedTree;
+
     //Algoritm för att äta och göra eld med ved
     while (answer.ToLower() != "slut")
     {
+
+        Console.WriteLine(storedFood + " " + storedTree);
         showItemsMessage(availbleItems, foodCount, treeCount);
         answer = Console.ReadLine();
 
         if (answer.ToLower() == "m" && foodCount > 0)
         {
+            foodCount = player.eat(foodCount);
             hungerDamage = 0;
-            if (hunger <= 60) { hunger += 40; }
-            else
-            {
-                hunger += 100 - hunger; // Gör så att hungern går upp till max 100
-            }
-            foodCount--;
         }
         else if (answer.ToLower() == "m" && foodCount == 0)
         { Console.WriteLine("Det finns ingen mat"); }
 
         else if (answer.ToLower() == "v" && treeCount > 0)
         {
+            treeCount = player.makeFire(treeCount);
             heatDamage = 0;
-            if (heat <= 50) { heat += 50; }
-            else
-            {
-                heat += 100 - heat;
-            }
-            treeCount--;
-        } else if (answer.ToLower() == "v" && treeCount == 0)
+        }
+        else if (answer.ToLower() == "v" && treeCount == 0)
         { Console.WriteLine("Det finns inga träd"); }
 
-        Console.WriteLine($"Hunger: {hunger} Värme: {heat} HP: {hp}");
+        Console.WriteLine($"Hunger: {player.hunger} Värme: {player.heat} HP: {player.hp}");
 
     }
 
+    storedFood = foodCount;
+    storedTree = treeCount;
 
-    hunger -= hungerDamage;
-    heat -= heatDamage;
+    player.hunger -= hungerDamage;
+    player.heat -= heatDamage;
 
     //Hp minskar när damage och heat sjunker ner
-    if (hunger <= 10 || heat <= 30)
+    if (player.hunger <= 10 || player.heat <= 30)
     {
-        hp -= damage;
+        player.hp -= damage;
     }
 
-    Console.WriteLine($"Hunger: {hunger} Värme: {heat} HP: {hp} Dag: {daysCount}");
+    Console.WriteLine($"Hunger: {player.hunger} Värme: {player.heat} HP: {player.hp} Dag: {daysCount}");
     Console.WriteLine("Tryck vidare för att avsluta dagen");
     Console.ReadLine();
 
-    if (hp <= 0)
+    if (player.hp <= 0)
     {
         Console.WriteLine("Du är död");
         break;
