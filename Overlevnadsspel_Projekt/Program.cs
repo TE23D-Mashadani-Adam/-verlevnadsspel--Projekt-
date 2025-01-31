@@ -14,7 +14,11 @@ int heatDamage = 0;
 
 Player player = new();
 
+
+List<string> dayBasedInfo = [];
+
 int daysCount = 1;
+int points = 0;
 
 int storedFood = 0;
 int storedTree = 0;
@@ -26,48 +30,61 @@ while (player.hp > 0)
     int treeCount = random.Next(0, 2);
     int damage = random.Next(40, 70);
     //Mängd förlorad värme och hunger
-    hungerDamage = random.Next(15, 40);
-    heatDamage = random.Next(15, 40);
+    hungerDamage = random.Next(30, 60);
+    heatDamage = random.Next(30, 60);
 
-    string availbleItems = "";
     string answer = "";
 
     foodCount += storedFood;
     treeCount += storedTree;
 
+    player.hunger -= hungerDamage;
+    player.heat -= heatDamage;
+
     //Algoritm för att äta och göra eld med ved
     while (answer.ToLower() != "slut")
     {
-
-        Console.WriteLine(storedFood + " " + storedTree);
-        showItemsMessage(availbleItems, foodCount, treeCount);
-        answer = Console.ReadLine();
-
-        if (answer.ToLower() == "m" && foodCount > 0)
-        {
-            foodCount = player.eat(foodCount);
-            hungerDamage = 0;
-        }
-        else if (answer.ToLower() == "m" && foodCount == 0)
-        { Console.WriteLine("Det finns ingen mat"); }
-
-        else if (answer.ToLower() == "v" && treeCount > 0)
-        {
-            treeCount = player.makeFire(treeCount);
-            heatDamage = 0;
-        }
-        else if (answer.ToLower() == "v" && treeCount == 0)
-        { Console.WriteLine("Det finns inga träd"); }
-
         Console.WriteLine($"Hunger: {player.hunger} Värme: {player.heat} HP: {player.hp}");
+        showItemsMessage(foodCount, treeCount);
+        answer = Console.ReadLine().ToLower();
+
+        switch (answer)
+        {
+            case "m":
+                if (foodCount > 0)
+                {
+                    foodCount = player.eat(foodCount);
+                    hungerDamage = 0;
+                }
+                else { Console.WriteLine("Det finns ingen mat"); }
+                break;
+            case "v":
+                if (treeCount > 0)
+                {
+                    treeCount = player.makeFire(treeCount);
+                    heatDamage = 0;
+                }
+                else { Console.WriteLine("Det finns ingen trä"); }
+                break;
+        }
+
+        if (answer == "slut")
+        {
+            break;
+        }
 
     }
+
+    Console.WriteLine("\n" + $"Dag: {daysCount} Hunger: {player.hunger} Värme: {player.heat} HP: {player.hp}");
+
 
     storedFood = foodCount;
     storedTree = treeCount;
 
-    player.hunger -= hungerDamage;
-    player.heat -= heatDamage;
+
+
+    dayBasedInfo.Add($"Hunger: {player.hunger} Värme: {player.heat} HP: {player.hp}");
+
 
     //Hp minskar när damage och heat sjunker ner
     if (player.hunger <= 10 || player.heat <= 30)
@@ -75,13 +92,16 @@ while (player.hp > 0)
         player.hp -= damage;
     }
 
-    Console.WriteLine($"Hunger: {player.hunger} Värme: {player.heat} HP: {player.hp} Dag: {daysCount}");
     Console.WriteLine("Tryck vidare för att avsluta dagen");
     Console.ReadLine();
 
     if (player.hp <= 0)
     {
         Console.WriteLine("Du är död");
+        points = ShowStats(dayBasedInfo, daysCount, points);
+        Console.WriteLine($"Du hade samlat {points} poäng!");
+
+        Console.ReadLine();
         break;
     }
 
@@ -89,11 +109,24 @@ while (player.hp > 0)
 
 }
 
-void showItemsMessage(string availbleItems, float foodCount, float treeCount)
+Console.ReadLine();
+
+void showItemsMessage(float foodCount, float treeCount)
 {
-    availbleItems = $"Mat: {foodCount} Ved: {treeCount}";
+    string availbleItems = $"Mat: {foodCount} Ved: {treeCount}";
     Console.WriteLine(availbleItems + "\n" + "För mat, skriv m, för ved, skriv v"
     + "För att avsluta, skriv 'slut'");
+}
+
+int ShowStats(List<string> list, int daysCount, int points)
+{
+    for (int i = 0; i < daysCount; i++)
+    {
+        Console.WriteLine($"Dag: {i + 1} Status: {list[i]}");
+    }
+    points = daysCount + 1;
+
+    return points;
 }
 
 Console.ReadLine();
