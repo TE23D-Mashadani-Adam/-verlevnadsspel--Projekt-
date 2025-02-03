@@ -9,10 +9,8 @@ Console.ReadLine();
 Console.Clear();
 
 
-int hungerDamage = 0;
-int heatDamage = 0;
-
 Player player = new();
+World world = new();
 
 
 List<string> dayBasedInfo = [];
@@ -20,76 +18,78 @@ List<string> dayBasedInfo = [];
 int daysCount = 1;
 int points = 0;
 
-int storedFood = 0;
-int storedTree = 0;
 
 while (player.hp > 0)
 {
-    //Mängd mat och ved
-    int foodCount = random.Next(0, 2);
-    int treeCount = random.Next(0, 2);
-    int damage = random.Next(40, 70);
-    //Mängd förlorad värme och hunger
-    hungerDamage = random.Next(30, 60);
-    heatDamage = random.Next(30, 60);
+    world.Randomize();
 
     string answer = "";
 
-    foodCount += storedFood;
-    treeCount += storedTree;
-
-    player.hunger -= hungerDamage;
-    player.heat -= heatDamage;
+    player.hunger -= world.hungerDamage;
+    player.heat -= world.heatDamage;
 
     //Algoritm för att äta och göra eld med ved
     while (answer.ToLower() != "slut")
     {
         Console.WriteLine($"Hunger: {player.hunger} Värme: {player.heat} HP: {player.hp}");
-        showItemsMessage(foodCount, treeCount);
+        showItemsMessage(world.foodCount, world.treeCount);
         answer = Console.ReadLine().ToLower();
 
         switch (answer)
         {
             case "m":
-                if (foodCount > 0)
+                if (world.foodCount > 0)
                 {
-                    foodCount = player.eat(foodCount);
-                    hungerDamage = 0;
+                    world.foodCount = player.Eat(world.foodCount);
+                    world.hungerDamage = 0;
                 }
                 else { Console.WriteLine("Det finns ingen mat"); }
                 break;
             case "v":
-                if (treeCount > 0)
+                if (world.treeCount > 0)
                 {
-                    treeCount = player.makeFire(treeCount);
-                    heatDamage = 0;
+                    world.treeCount = player.MakeFire(world.treeCount);
+                    world.heatDamage = 0;
                 }
                 else { Console.WriteLine("Det finns ingen trä"); }
                 break;
+            case "in":
+                player.OpenInventory();
+                string inAnswer = Console.ReadLine();
+                switch (inAnswer)
+                {
+                    case "m":
+                        if (Player.storedFood > 0)
+                        { player.Eat(Player.storedFood); Player.storedFood--; }
+                        else { Console.WriteLine("Det finns ingen mat i din inventory"); }
+                        break;
+                    case "v":
+                        if (Player.storedTree > 0)
+                        { player.MakeFire(Player.storedTree); Player.storedTree--; }
+                        else { Console.WriteLine("Det finns ingen trä i din inventory"); }
+                        break;
+                }
+                break;
         }
 
-        if (answer == "slut")
+        if (answer == "s")
         {
             break;
         }
 
     }
 
+    Player.storedFood += world.foodCount;
+    Player.storedTree += world.treeCount;
+
     Console.WriteLine("\n" + $"Dag: {daysCount} Hunger: {player.hunger} Värme: {player.heat} HP: {player.hp}");
 
-
-    storedFood = foodCount;
-    storedTree = treeCount;
-
-
-
     dayBasedInfo.Add($"Hunger: {player.hunger} Värme: {player.heat} HP: {player.hp}");
-
 
     //Hp minskar när damage och heat sjunker ner
     if (player.hunger <= 10 || player.heat <= 30)
     {
-        player.hp -= damage;
+        player.hp -= world.damage;
     }
 
     Console.WriteLine("Tryck vidare för att avsluta dagen");
@@ -115,7 +115,7 @@ void showItemsMessage(float foodCount, float treeCount)
 {
     string availbleItems = $"Mat: {foodCount} Ved: {treeCount}";
     Console.WriteLine(availbleItems + "\n" + "För mat, skriv m, för ved, skriv v"
-    + "För att avsluta, skriv 'slut'");
+    + "För att avsluta, skriv 's', för att öppna inventory, skriv 'in'");
 }
 
 int ShowStats(List<string> list, int daysCount, int points)

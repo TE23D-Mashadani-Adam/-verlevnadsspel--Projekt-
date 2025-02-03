@@ -4,7 +4,13 @@ public class Player
     public float hunger = 100;
     public float heat = 100;
 
-    public int eat(int foodCount)
+    static public int storedFood;
+    static public int storedTree;
+
+    List<int> inventory = [storedFood, storedTree];
+
+
+    public int Eat(int foodCount)
     {
         if (hunger <= 60) { hunger += 40; }
         else
@@ -15,14 +21,23 @@ public class Player
         return foodCount;
     }
 
-    public int makeFire(int treeCount)
+    public int MakeFire(int treeCount)
+
     {
-            if (heat <= 50) { heat += 50; }
-            else
-            {
-                heat += 100 - heat;
-            }
-            treeCount--;
-            return treeCount;
+        if (heat <= 50) { heat += 50; }
+        else
+        {
+            heat += 100 - heat;
+        }
+        treeCount--;
+        return treeCount;
     }
+
+    public void OpenInventory()
+    {
+        Console.WriteLine($"Stored Food: {storedFood}" + "\n"
+        + $"Store trees: {storedTree}");
+        Console.WriteLine("Skriv m för att äta mat, skriv v för ved");
+    }
+
 }
