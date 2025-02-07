@@ -40,4 +40,18 @@ public class Player
         Console.WriteLine("Skriv m för att äta mat, skriv v för ved");
     }
 
+    public void EatFromInventory()
+    {
+        if (storedFood > 0)
+        { storedFood = Eat(storedFood); }
+        else { Console.WriteLine("Det finns ingen mat i din inventory"); }
+    }
+
+    public void MakeFireFromInventory()
+    {
+        if (storedTree > 0)
+        { storedTree = MakeFire(storedTree); }
+        else { Console.WriteLine("Det finns ingen trä i din inventory"); }
+    }
+
 }
