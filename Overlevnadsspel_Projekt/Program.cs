@@ -1,7 +1,8 @@
 ﻿using System.Data;
 using System.Runtime.Serialization.Json;
 
-Random random = new();
+Player player = new();
+World world = new();
 
 Console.WriteLine("Hej och välkommen, du behöver överleva genom att äta" +
 " och göra eld för att bli varm, var försiktig så att du inte förlorar mycket hp" +
@@ -9,17 +10,25 @@ Console.WriteLine("Hej och välkommen, du behöver överleva genom att äta" +
 Console.ReadLine();
 Console.Clear();
 
+Console.WriteLine("Vad är ditt mål? Ange antal dagar du vill överleva som mål");
 
-Player player = new();
-World world = new();
+string goalText = "";
+int goal = 0;
+bool rightParse = false;
 
+int maxGoalDays = 20;
+
+while (!rightParse)
+{
+    rightParse = TryCorrectInput(goalText, ref goal, rightParse, maxGoalDays);
+}
 
 List<string> dayBasedInfo = [];
 
 int daysCount = 1;
 int points = 0;
 
-
+//Loopen som kör själva spelet så länge spelaren lever
 while (player.hp > 0)
 {
     world.Randomize();
@@ -36,7 +45,143 @@ while (player.hp > 0)
         showItemsMessage(world.foodCount, world.treeCount);
         answer = Console.ReadLine().ToLower();
 
-        switch (answer)
+        SurvivalAlghorythm(answer);
+
+        if (answer == "s")
+        {
+            break;
+        }
+
+    }
+
+    //Kvarlämnad mat går till inventory, status för dagen visas och lagras i en lista
+
+    Player.storedFood += world.foodCount;
+    Player.storedTree += world.treeCount;
+
+    Console.WriteLine("\n" + $"Dag: {daysCount} Hunger: {player.hunger} Värme: {player.heat} HP: {player.hp}");
+
+    dayBasedInfo.Add($"Hunger: {player.hunger} Värme: {player.heat} HP: {player.hp}");
+
+    //Hp minskar när damage och heat sjunker ner
+    if (player.hunger <= 10 || player.heat <= 30)
+    {
+        player.hp -= world.damage;
+    }
+
+    Console.WriteLine("Tryck vidare för att avsluta dagen");
+    Console.ReadLine();
+
+    //Kollar ifall spelaren har dött och kör "gameover" logiken då
+    if (player.hp <= 0)
+    {
+        Console.WriteLine("Du är död, om du vill visa fullständig statistik, skriv 's'");
+        string statAnswer = Console.ReadLine();
+        points = ShowStats(dayBasedInfo, daysCount, points, statAnswer);
+        Console.WriteLine($"Du hade samlat {points} poäng!");
+
+        if (daysCount >= goal)
+        {
+            Console.WriteLine($"Grattis, du hade uppnått ditt mål som var att överleva {goal} dagar!");
+        }
+        else
+        {
+            Console.WriteLine($"Tyvärr, du hade inte uppnått ditt mål som var att överleva {goal} dagar!");
+        }
+
+        Console.ReadLine();
+        break;
+    }
+
+    daysCount++;
+
+}
+
+int h = 9;
+int u = 19;
+
+Console.ReadLine();
+
+//Visar upp nuvarande mat och ved i världen
+void showItemsMessage(float foodCount, float treeCount)
+{
+    string availbleItems = $"Mat: {foodCount} Ved: {treeCount}";
+    Console.WriteLine(availbleItems + "\n" + "För mat, skriv m, för ved, skriv v"
+    + "För att avsluta, skriv 's', för att öppna inventory, skriv 'in'");
+}
+
+//Visar upp statistik i slutet av spelet, skickar tillbaka poäng
+int ShowStats(List<string> list, int daysCount, int points, string statAnswer)
+{
+    for (int i = 0; i < daysCount; i++)
+    {
+        if (statAnswer == "s")
+        {
+            Console.WriteLine($"Dag: {i + 1} Status: {list[i]}");
+        }
+        else
+        {
+            Console.WriteLine($"Dag: {i + 1} Status: Överlevde!");
+        }
+    }
+    points = daysCount;
+
+    return points;
+}
+
+//Gör att spelaren äter ifall det finns mat
+void TryEatFood(ref int foodCount, ref int hungerDamage)
+{
+    if (foodCount > 0)
+    {
+        foodCount = player.Eat(foodCount);
+        hungerDamage = 0;
+    }
+    else { Console.WriteLine("Det finns ingen mat!"); }
+}
+
+//Gör eld ifall det finns ved
+void TryMakeFire(ref int treeCount, ref int heatDamage)
+{
+    if (treeCount > 0)
+    {
+        treeCount = player.MakeFire(treeCount);
+        heatDamage = 0;
+    }
+    else { Console.WriteLine("Det finns ingen trä!"); }
+}
+
+//Säger till att användare skriver in rätt siffra
+bool TryCorrectInput(string goalText, ref int goal, bool rightParse, int maxGoalDays)
+
+{
+    goalText = Console.ReadLine();
+    rightParse = int.TryParse(goalText, out goal);
+    if (!rightParse)
+    {
+        Console.WriteLine("Skriv ett giltigt tal, bokstäver och toma rader accepteras ej!");
+        return false;
+    }
+    else if (rightParse && goal > maxGoalDays)
+    {
+        Console.WriteLine($"Du kan inte ha mer än {maxGoalDays} dagar som mål!");
+        return false;
+    }
+    else if (rightParse && goal <= 0)
+    {
+        Console.WriteLine("Skriv ett värde större än noll tack");
+        return false;
+    }
+    else
+    {
+        return true;
+    }
+}
+
+//Kör upp algoritmen för att överleva beroende på vad spelaren vill göra
+void SurvivalAlghorythm(string answer)
+{
+     switch (answer)
         {
             case "m":
                 TryEatFood(ref world.foodCount, ref world.hungerDamage);
@@ -61,95 +206,6 @@ while (player.hp > 0)
                 Console.WriteLine("Ogiltigt val, försök igen!");
                 break;
         }
-
-        if (answer == "s")
-        {
-            break;
-        }
-
-    }
-
-    Player.storedFood += world.foodCount;
-    Player.storedTree += world.treeCount;
-
-    Console.WriteLine("\n" + $"Dag: {daysCount} Hunger: {player.hunger} Värme: {player.heat} HP: {player.hp}");
-
-    //Daglig information lagras i listan
-    dayBasedInfo.Add($"Hunger: {player.hunger} Värme: {player.heat} HP: {player.hp}");
-
-    //Hp minskar när damage och heat sjunker ner
-    if (player.hunger <= 10 || player.heat <= 30)
-    {
-        player.hp -= world.damage;
-    }
-
-    Console.WriteLine("Tryck vidare för att avsluta dagen");
-    Console.ReadLine();
-
-    if (player.hp <= 0)
-    {
-        Console.WriteLine("Du är död, om du vill visa fullständig statistik, skriv 's'");
-        string statAnswer = Console.ReadLine();
-        points = ShowStats(dayBasedInfo, daysCount, points, statAnswer);
-        Console.WriteLine($"Du hade samlat {points} poäng!");
-
-        Console.ReadLine();
-        break;
-    }
-
-    daysCount++;
-
 }
-
-int h = 9;
-int u = 19;
-
-Console.ReadLine();
-
-void showItemsMessage(float foodCount, float treeCount)
-{
-    string availbleItems = $"Mat: {foodCount} Ved: {treeCount}";
-    Console.WriteLine(availbleItems + "\n" + "För mat, skriv m, för ved, skriv v"
-    + "För att avsluta, skriv 's', för att öppna inventory, skriv 'in'");
-}
-
-int ShowStats(List<string> list, int daysCount, int points, string statAnswer)
-{
-    for (int i = 0; i < daysCount; i++)
-    {
-        if (statAnswer == "s")
-        {
-            Console.WriteLine($"Dag: {i + 1} Status: {list[i]}");
-        }
-        else
-        {
-            Console.WriteLine($"Dag: {i + 1} Status: Överlevde!");
-        }
-    }
-    points = daysCount + 1;
-
-    return points;
-}
-
-void TryEatFood(ref int foodCount, ref int hungerDamage)
-{
-    if (foodCount > 0)
-    {
-        foodCount = player.Eat(foodCount);
-        hungerDamage = 0;
-    }
-    else { Console.WriteLine("Det finns ingen mat!"); }
-}
-
-void TryMakeFire(ref int treeCount, ref int heatDamage)
-{
-    if (treeCount > 0)
-    {
-        treeCount = player.Eat(treeCount);
-        heatDamage = 0;
-    }
-    else { Console.WriteLine("Det finns ingen trä!"); }
-}
-
 
 

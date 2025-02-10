@@ -9,7 +9,7 @@ public class Player
 
     List<int> inventory = [storedFood, storedTree];
 
-
+    //Höjer spelarens hunger bar genom att äta
     public int Eat(int foodCount)
     {
         if (hunger <= 60) { hunger += 40; }
@@ -21,6 +21,7 @@ public class Player
         return foodCount;
     }
 
+    //Gör eld och höjer spelarens "heat" bar
     public int MakeFire(int treeCount)
 
     {
@@ -33,6 +34,7 @@ public class Player
         return treeCount;
     }
 
+    //Öppnar invenotry och visar upp dens innehåll
     public void OpenInventory()
     {
         Console.WriteLine($"Stored Food: {storedFood}" + "\n"
@@ -40,6 +42,7 @@ public class Player
         Console.WriteLine("Skriv m för att äta mat, skriv v för ved");
     }
 
+    //Spelaren äter från inventoryn
     public void EatFromInventory()
     {
         if (storedFood > 0)
@@ -47,6 +50,7 @@ public class Player
         else { Console.WriteLine("Det finns ingen mat i din inventory"); }
     }
 
+    //Spelaren gör eld med ved från inventory
     public void MakeFireFromInventory()
     {
         if (storedTree > 0)
