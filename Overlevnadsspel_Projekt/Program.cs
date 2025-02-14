@@ -4,29 +4,29 @@ using System.Runtime.Serialization.Json;
 Player player = new();
 World world = new();
 
+
+int daysCount = 1;
+int points = 0;
+List<string> dayBasedInfo = [];
+
 Console.WriteLine("Hej och välkommen, du behöver överleva genom att äta" +
 " och göra eld för att bli varm, var försiktig så att du inte förlorar mycket hp" +
 " och dör!,din hp minskar när hunger och värme går under noll, tryck vidare för att starta spelet");
 Console.ReadLine();
 Console.Clear();
 
-Console.WriteLine("Vad är ditt mål? Ange antal dagar du vill överleva som mål");
+Console.WriteLine("Vad är ditt mål? Ange antal dagar du vill överleva som mål från 0 till 20");
 
+
+//Låter användaren välja ett mål, tvingas välja rätt siffra
 string goalText = "";
 int goal = 0;
 bool rightParse = false;
-
 int maxGoalDays = 20;
-
 while (!rightParse)
 {
     rightParse = TryCorrectInput(goalText, ref goal, rightParse, maxGoalDays);
 }
-
-List<string> dayBasedInfo = [];
-
-int daysCount = 1;
-int points = 0;
 
 //Loopen som kör själva spelet så länge spelaren lever
 while (player.hp > 0)
@@ -51,23 +51,15 @@ while (player.hp > 0)
         {
             break;
         }
-
     }
 
     //Kvarlämnad mat går till inventory, status för dagen visas och lagras i en lista
-
-    Player.storedFood += world.foodCount;
-    Player.storedTree += world.treeCount;
+    StoreItems();
 
     Console.WriteLine("\n" + $"Dag: {daysCount} Hunger: {player.hunger} Värme: {player.heat} HP: {player.hp}");
 
-    dayBasedInfo.Add($"Hunger: {player.hunger} Värme: {player.heat} HP: {player.hp}");
-
     //Hp minskar när damage och heat sjunker ner
-    if (player.hunger <= 10 || player.heat <= 30)
-    {
-        player.hp -= world.damage;
-    }
+    world.TryGiveDamage(player.hunger, player.heat, ref player.hp);
 
     Console.WriteLine("Tryck vidare för att avsluta dagen");
     Console.ReadLine();
@@ -75,20 +67,8 @@ while (player.hp > 0)
     //Kollar ifall spelaren har dött och kör "gameover" logiken då
     if (player.hp <= 0)
     {
-        Console.WriteLine("Du är död, om du vill visa fullständig statistik, skriv 's'");
-        string statAnswer = Console.ReadLine();
-        points = ShowStats(dayBasedInfo, daysCount, points, statAnswer);
-        Console.WriteLine($"Du hade samlat {points} poäng!");
-
-        if (daysCount >= goal)
-        {
-            Console.WriteLine($"Grattis, du hade uppnått ditt mål som var att överleva {goal} dagar!");
-        }
-        else
-        {
-            Console.WriteLine($"Tyvärr, du hade inte uppnått ditt mål som var att överleva {goal} dagar!");
-        }
-
+        ShowDeadScene();
+        goal = CheckIfGoalReached(goal);
         Console.ReadLine();
         break;
     }
@@ -96,9 +76,6 @@ while (player.hp > 0)
     daysCount++;
 
 }
-
-int h = 9;
-int u = 19;
 
 Console.ReadLine();
 
@@ -111,9 +88,9 @@ void showItemsMessage(float foodCount, float treeCount)
 }
 
 //Visar upp statistik i slutet av spelet, skickar tillbaka poäng
-int ShowStats(List<string> list, int daysCount, int points, string statAnswer)
+int ShowStats(List<string> list, int points, string statAnswer)
 {
-    for (int i = 0; i < daysCount; i++)
+    for (int i = 0; i < list.Count; i++)
     {
         if (statAnswer == "s")
         {
@@ -124,7 +101,7 @@ int ShowStats(List<string> list, int daysCount, int points, string statAnswer)
             Console.WriteLine($"Dag: {i + 1} Status: Överlevde!");
         }
     }
-    points = daysCount;
+    points = list.Count;
 
     return points;
 }
@@ -181,31 +158,59 @@ bool TryCorrectInput(string goalText, ref int goal, bool rightParse, int maxGoal
 //Kör upp algoritmen för att överleva beroende på vad spelaren vill göra
 void SurvivalAlghorythm(string answer)
 {
-     switch (answer)
-        {
-            case "m":
-                TryEatFood(ref world.foodCount, ref world.hungerDamage);
-                break;
-            case "v":
-                TryMakeFire(ref world.treeCount, ref world.heatDamage);
-                break;
-            case "in":
-                player.OpenInventory();
-                string inAnswer = Console.ReadLine();
-                switch (inAnswer)
-                {
-                    case "m":
-                        player.EatFromInventory();
-                        break;
-                    case "v":
-                        player.MakeFireFromInventory();
-                        break;
-                }
-                break;
-            default:
-                Console.WriteLine("Ogiltigt val, försök igen!");
-                break;
-        }
+    switch (answer)
+    {
+        case "m":
+            TryEatFood(ref world.foodCount, ref world.hungerDamage);
+            break;
+        case "v":
+            TryMakeFire(ref world.treeCount, ref world.heatDamage);
+            break;
+        case "in":
+            player.OpenInventory();
+            string inAnswer = Console.ReadLine();
+            switch (inAnswer)
+            {
+                case "m":
+                    player.EatFromInventory();
+                    break;
+                case "v":
+                    player.MakeFireFromInventory();
+                    break;
+            }
+            break;
+        default:
+            Console.WriteLine("Ogiltigt val, försök igen!");
+            break;
+    }
 }
 
+int CheckIfGoalReached(int goal)
+{
+    if (daysCount >= goal)
+    {
+        Console.WriteLine($"Grattis, du hade uppnått ditt mål som var att överleva {goal} dagar!");
+    }
+    else
+    {
+        Console.WriteLine($"Tyvärr, du hade inte uppnått ditt mål som var att överleva {goal} dagar!");
+    }
+    return goal;
+}
 
+void StoreItems()
+{
+    Player.storedFood += world.foodCount;
+    Player.storedTree += world.treeCount;
+
+    dayBasedInfo.Add($"Hunger: {player.hunger} Värme: {player.heat} HP: {player.hp}");
+
+}
+
+void ShowDeadScene()
+{
+    Console.WriteLine("Du är död, om du vill visa fullständig statistik, skriv 's'");
+    string statAnswer = Console.ReadLine();
+    points = ShowStats(dayBasedInfo, points, statAnswer);
+    Console.WriteLine($"Du hade samlat {points} poäng!");
+}

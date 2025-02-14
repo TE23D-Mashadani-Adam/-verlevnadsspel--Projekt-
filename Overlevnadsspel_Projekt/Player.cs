@@ -1,8 +1,11 @@
 public class Player
 {
+    World world = new();
     public float hp = 100;
     public float hunger = 100;
     public float heat = 100;
+    public int damage;
+    
 
     static public int storedFood;
     static public int storedTree;
@@ -57,5 +60,9 @@ public class Player
         { storedTree = MakeFire(storedTree); }
         else { Console.WriteLine("Det finns ingen trä i din inventory"); }
     }
+
+    
+
+   
 
 }
