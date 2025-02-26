@@ -80,7 +80,7 @@ while (player.hp > 0)
 void ShowItemsMessage(float foodCount, float treeCount)
 {
     string availbleItems = $"Mat: {foodCount} Ved: {treeCount}";
-    Console.WriteLine(availbleItems + "\n" + "För mat, skriv m, för ved, skriv v"
+    Console.WriteLine(availbleItems + "\n" + "För mat, skriv m, för ved, skriv v, "
     + "För att avsluta, skriv 's', för att öppna inventory, skriv 'in'");
 }
 
