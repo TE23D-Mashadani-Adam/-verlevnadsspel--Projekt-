@@ -1,6 +1,5 @@
 public class Player
 {
-    World world = new();
     public float hp = 100;
     public float hunger = 100;
     public float heat = 100;
@@ -9,8 +8,6 @@ public class Player
 
     static public int storedFood;
     static public int storedTree;
-
-    List<int> inventory = [storedFood, storedTree];
 
     //Höjer spelarens hunger bar genom att äta
     public int Eat(int foodCount)
@@ -42,7 +39,7 @@ public class Player
     {
         Console.WriteLine($"Stored Food: {storedFood}" + "\n"
         + $"Store trees: {storedTree}");
-        Console.WriteLine("Skriv m för att äta mat, skriv v för ved");
+        Console.WriteLine("Skriv m för att äta mat, skriv v för ved, tryck vidare för att stänga inventory");
     }
 
     //Spelaren äter från inventoryn

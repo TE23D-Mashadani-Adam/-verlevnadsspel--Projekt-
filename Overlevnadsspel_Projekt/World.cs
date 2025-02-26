@@ -10,7 +10,7 @@ public class World
     public int hungerDamage;
     public int heatDamage;
 
-
+    //Ger skada ifall hunger och heat är under gränsen
      public void TryGiveDamage(float hunger, float heat, ref float hp)
     {
         if (hunger <= 10 || heat <= 30)
@@ -18,6 +18,8 @@ public class World
             hp -= damage;
         }
     }
+
+    //Slumpar ihop variabler som håller skador och antal resurser
     public void Randomize()
     {
         //Mängd mat och ved
