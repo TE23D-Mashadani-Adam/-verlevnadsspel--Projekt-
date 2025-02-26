@@ -6,7 +6,6 @@ World world = new();
 
 
 int daysCount = 1;
-int points = 0;
 //Använder lista istället för Array, för den är mer dynamisk och är enklare att ändra på, vilket görs mycket i koden
 List<string> dayBasedInfo = []; 
 
