@@ -47,12 +47,12 @@ while (player.hp > 0)
         ShowItemsMessage(world.foodCount, world.treeCount);
         answer = Console.ReadLine().ToLower();
 
-        SurvivalAlghorithm(answer);
+        SurvivalAlghorithm(answer, player, world);
 
     }
 
     //Kvarlämnad mat går till inventory, status för dagen visas och lagras i en lista
-    StoreItems();
+    StoreItems(world, player, dayBasedInfo);
 
     Console.WriteLine("\n" + $"Dag: {daysCount} Hunger: {player.hunger} Värme: {player.heat} HP: {player.hp}");
 
@@ -65,8 +65,8 @@ while (player.hp > 0)
     //Kollar ifall spelaren har dött och kör "gameover" logiken då
     if (player.hp <= 0)
     {
-        ShowDeadScene();
-        CheckIfGoalReached();
+        ShowDeadScene(dayBasedInfo);
+        CheckIfGoalReached(daysCount, goal);
         Console.WriteLine("Tryck vidare för att avsluta spelet");
         Console.ReadLine();
         break;
@@ -77,7 +77,7 @@ while (player.hp > 0)
 }
 
 //Visar upp nuvarande mat och ved i världen
-void ShowItemsMessage(float foodCount, float treeCount)
+static void ShowItemsMessage(float foodCount, float treeCount)
 {
     string availbleItems = $"Mat: {foodCount} Ved: {treeCount}";
     Console.WriteLine(availbleItems + "\n" + "För mat, skriv m, för ved, skriv v, "
@@ -85,7 +85,7 @@ void ShowItemsMessage(float foodCount, float treeCount)
 }
 
 //Visar upp statistik i slutet av spelet, skickar tillbaka poäng
-int ShowStats(List<string> dataList)
+static int ShowStats(List<string> dataList)
 {
     for (int i = 0; i < dataList.Count; i++)
     {
@@ -95,7 +95,7 @@ int ShowStats(List<string> dataList)
 }
 
 //Gör att spelaren äter ifall det finns mat
-void TryEatFood()
+static void TryEatFood(World world, Player player)
 {
     if (world.foodCount > 0)
     {
@@ -105,7 +105,7 @@ void TryEatFood()
 }
 
 //Gör eld ifall det finns ved
-void TryMakeFire()
+static void TryMakeFire(World world, Player player)
 {
     if (world.treeCount > 0)
     {
@@ -115,7 +115,7 @@ void TryMakeFire()
 }
 
 //Säger till att input är en siffra, annars blir metoden falsk och ger ett fel meddelande
-bool CheckCorrectInput(string text, ref int num)
+static bool CheckCorrectInput(string text, ref int num)
 {
     bool checkRightParse = int.TryParse(text, out num);
     if (!checkRightParse)
@@ -129,7 +129,7 @@ bool CheckCorrectInput(string text, ref int num)
     }
 }
 //Säger till att användare skriver in rätt siffra
-void TryCorrectGoalInput(ref bool rightParse, int num, int maxGoalDays)
+static void TryCorrectGoalInput(ref bool rightParse, int num, int maxGoalDays)
 {
     if (rightParse && num > maxGoalDays)
     {
@@ -144,15 +144,15 @@ void TryCorrectGoalInput(ref bool rightParse, int num, int maxGoalDays)
 }
 
 //Kör upp algoritmen för att överleva beroende på vad spelaren vill göra
-void SurvivalAlghorithm(string answer)
+static void SurvivalAlghorithm(string answer, Player player, World world)
 {
     switch (answer)
     {
         case "m":
-            TryEatFood();
+            TryEatFood(world, player);
             break;
         case "v":
-            TryMakeFire();
+            TryMakeFire(world, player);
             break;
         case "in":
             player.OpenInventory();
@@ -175,7 +175,7 @@ void SurvivalAlghorithm(string answer)
 }
 
 //Kollar ifall spelaren hade uppnått sitt mål
-void CheckIfGoalReached()
+static void CheckIfGoalReached(int daysCount, int goal)
 {
     if (daysCount >= goal)
     {
@@ -188,17 +188,17 @@ void CheckIfGoalReached()
 }
 
 //Lagrar kvarlämnade resurser
-void StoreItems()
+static void StoreItems(World world, Player player, List<string> dayBasedInfo)
 {
-    Player.storedFood += world.foodCount;
-    Player.storedTree += world.treeCount;
+    player.storedFood += world.foodCount;
+    player.storedTree += world.treeCount;
 
     //Lägger till daglig information i en lista
     dayBasedInfo.Add($"Hunger: {player.hunger} Värme: {player.heat} HP: {player.hp}");
 }
 
 //Visar upp statistik efter att spelaren hade dött
-void ShowDeadScene()
+static void ShowDeadScene(List<string> dayBasedInfo)
 {
     Console.WriteLine("Du är död, om du vill visa statistik, skriv 's'");
     string statAnswer = Console.ReadLine();

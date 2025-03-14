@@ -6,8 +6,8 @@ public class Player
     public int damage;
     
 
-    static public int storedFood;
-    static public int storedTree;
+     public int storedFood;
+     public int storedTree;
 
     //Höjer spelarens hunger bar genom att äta
     public int Eat(int foodCount)
