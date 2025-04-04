@@ -4,10 +4,10 @@ public class Player
     public float hunger = 100;
     public float heat = 100;
     public int damage;
-    
 
-     public int storedFood;
-     public int storedTree;
+
+    public int storedFood;
+    public int storedTree;
 
     //Höjer spelarens hunger bar genom att äta
     public int Eat(int foodCount)
@@ -58,8 +58,14 @@ public class Player
         else { Console.WriteLine("Det finns ingen trä i din inventory"); }
     }
 
-    
+    public void TakeDamage(World world)
+    {
+        hunger -= world.hungerDamage;
+        heat -= world.heatDamage;
+    }
 
-   
+
+
+
 
 }

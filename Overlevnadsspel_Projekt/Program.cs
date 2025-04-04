@@ -4,10 +4,11 @@ using System.Runtime.Serialization.Json;
 Player player = new();
 World world = new();
 
+int goal = 0;
 
 int daysCount = 1;
 //Använder lista istället för Array, för den är mer dynamisk och är enklare att ändra på, vilket görs mycket i koden
-List<string> dayBasedInfo = []; 
+List<string> dayBasedInfo = [];
 
 Console.WriteLine("Hej och välkommen, du behöver överleva genom att äta" +
 " och göra eld för att bli varm, var försiktig så att du inte förlorar mycket hp" +
@@ -15,31 +16,21 @@ Console.WriteLine("Hej och välkommen, du behöver överleva genom att äta" +
 Console.ReadLine();
 Console.Clear();
 
-Console.WriteLine("Vad är ditt mål? Ange antal dagar du vill överleva som mål från 0 till 20");
 
-
-//Låter användaren välja ett mål, tvingas välja rätt siffra
-string goalText = "";
-int goal = 0;
-bool rightParse = false;
-int maxGoalDays = 20;
-while (!rightParse)
-{
-    goalText = Console.ReadLine();
-    rightParse = CheckCorrectInput(goalText, ref goal); //Kollar ifall spelaren skrivit en siffra
-    TryCorrectGoalInput(ref rightParse, goal, maxGoalDays); //Säger till att siffran är inom intervallet
-}
+goal = ChooseGoal(goal);
 
 
 //Loopen som kör själva spelet så länge spelaren lever
 while (player.hp > 0)
 {
-    world.Randomize();
+    world.SetOdz();
+
+    world.Randomize(daysCount);
     string answer = "";
 
-    player.hunger -= world.hungerDamage;
-    player.heat -= world.heatDamage;
+     player.TakeDamage(world);
 
+ 
     //Algoritm för att äta och göra eld med ved
     while (answer.ToLower() != "s")
     {
@@ -51,6 +42,40 @@ while (player.hp > 0)
 
     }
 
+    EndDayScene(world, player, dayBasedInfo, daysCount);
+
+    //Kollar ifall spelaren har dött och kör "gameover" logiken då
+    if (player.hp <= 0)
+    {
+        StartDeadScene(dayBasedInfo, daysCount, goal);
+        break;
+    }
+
+    daysCount++;
+
+}
+
+static int ChooseGoal(int goal)
+{
+    Console.WriteLine("Vad är ditt mål? Ange antal dagar du vill överleva som mål från 1 till 20");
+
+    //Låter användaren välja ett mål, tvingas välja rätt siffra
+    string goalText = "";
+    goal = 0;
+    bool rightParse = false;
+    int maxGoalDays = 20;
+    while (!rightParse)
+    {
+        goalText = Console.ReadLine();
+        rightParse = CheckCorrectInput(goalText, ref goal); //Kollar ifall spelaren skrivit en siffra
+        TryCorrectGoalInput(ref rightParse, goal, maxGoalDays); //Säger till att siffran är inom intervallet
+    }
+
+    return goal;
+}
+
+static void EndDayScene(World world, Player player, List<string> dayBasedInfo, int daysCount)
+{
     //Kvarlämnad mat går till inventory, status för dagen visas och lagras i en lista
     StoreItems(world, player, dayBasedInfo);
 
@@ -61,19 +86,14 @@ while (player.hp > 0)
 
     Console.WriteLine("Tryck vidare för att avsluta dagen");
     Console.ReadLine();
+}
 
-    //Kollar ifall spelaren har dött och kör "gameover" logiken då
-    if (player.hp <= 0)
-    {
-        ShowDeadScene(dayBasedInfo);
-        CheckIfGoalReached(daysCount, goal);
-        Console.WriteLine("Tryck vidare för att avsluta spelet");
-        Console.ReadLine();
-        break;
-    }
-
-    daysCount++;
-
+static void StartDeadScene(List<string> dayBasedInfo, int daysCount, int goal)
+{
+    ShowDeadScene(dayBasedInfo);
+    CheckIfGoalReached(daysCount, goal);
+    Console.WriteLine("Tryck vidare för att avsluta spelet");
+    Console.ReadLine();
 }
 
 //Visar upp nuvarande mat och ved i världen
@@ -199,9 +219,11 @@ static void StoreItems(World world, Player player, List<string> dayBasedInfo)
 
 //Visar upp statistik efter att spelaren hade dött
 static void ShowDeadScene(List<string> dayBasedInfo)
+
 {
     Console.WriteLine("Du är död, om du vill visa statistik, skriv 's'");
     string statAnswer = Console.ReadLine();
     if (statAnswer == "s") { ShowStats(dayBasedInfo); }
     Console.WriteLine($"Du hade samlat {dayBasedInfo.Count} poäng!");
 }
+
