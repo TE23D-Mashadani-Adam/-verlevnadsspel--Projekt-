@@ -19,41 +19,7 @@ Console.Clear();
 
 goal = ChooseGoal(goal);
 
-
-//Loopen som kör själva spelet så länge spelaren lever
-while (player.hp > 0)
-{
-    world.SetOdz();
-
-    world.Randomize(daysCount);
-    string answer = "";
-
-     player.TakeDamage(world);
-
- 
-    //Algoritm för att äta och göra eld med ved
-    while (answer.ToLower() != "s")
-    {
-        Console.WriteLine($"Hunger: {player.hunger} Värme: {player.heat} HP: {player.hp}");
-        ShowItemsMessage(world.foodCount, world.treeCount);
-        answer = Console.ReadLine().ToLower();
-
-        SurvivalAlghorithm(answer, player, world);
-
-    }
-
-    EndDayScene(world, player, dayBasedInfo, daysCount);
-
-    //Kollar ifall spelaren har dött och kör "gameover" logiken då
-    if (player.hp <= 0)
-    {
-        StartDeadScene(dayBasedInfo, daysCount, goal);
-        break;
-    }
-
-    daysCount++;
-
-}
+GameAlghorythm(player, world, daysCount, dayBasedInfo, goal);
 
 static int ChooseGoal(int goal)
 {
@@ -227,3 +193,42 @@ static void ShowDeadScene(List<string> dayBasedInfo)
     Console.WriteLine($"Du hade samlat {dayBasedInfo.Count} poäng!");
 }
 
+//Kör upp hela spel algortimen
+static void GameAlghorythm(Player player, World world, int daysCount, List<string> dayBasedInfo, int goal)
+{
+    //Loopen som kör själva spelet så länge spelaren lever
+    while (player.hp > 0)
+    {
+        world.SetOdz();
+
+        world.Randomize(daysCount);
+        string answer = "";
+
+        player.TakeDamage(world);
+
+
+        //Algoritm för att äta och göra eld med ved
+        while (answer.ToLower() != "s")
+        {
+            Console.WriteLine($"Hunger: {player.hunger} Värme: {player.heat} HP: {player.hp}");
+            ShowItemsMessage(world.foodCount, world.treeCount);
+            answer = Console.ReadLine().ToLower();
+
+            SurvivalAlghorithm(answer, player, world);
+
+        }
+
+        EndDayScene(world, player, dayBasedInfo, daysCount);
+        Console.Clear();
+
+        //Kollar ifall spelaren har dött och kör "gameover" logiken då
+        if (player.hp <= 0)
+        {
+            StartDeadScene(dayBasedInfo, daysCount, goal);
+            break;
+        }
+
+        daysCount++;
+
+    }
+}
